@@ -3,6 +3,13 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cors = require("cors")
+const jwt = require("jsonwebtoken")
+const passport = require("passport")
+const strategy = require("passport-local").Strategy
+const authenticate = require("./authenticate")
+
+const session = require("express-session");
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -23,8 +30,16 @@ async function main() {
   await mongoose.connect(process.env.MongoDB_URI);
 }
 
+passport.use(
+  authenticate.local_strategy
+);
+
+app.use(cors())
 app.use(logger('dev'));
 app.use(express.json());
+app.use(session({ secret: process.env.SECRET_P, resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));

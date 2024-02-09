@@ -5,7 +5,7 @@ const Commnent = require("./model/comment")
 
 const { faker } = require('@faker-js/faker');
 const bcrypt = require("bcryptjs")
-const fs = require('fs')
+const fs = require('fs');
 
 let data = ""
 const userAndPasswordData = []
@@ -23,35 +23,30 @@ const connectDB = async () => {
     }
 };
 
-const generateUsers = (num) => {
-    const user = [];
+const generateUsers = async (num) => {
+    const users = [];
+    const promises = []
     
     for (let i = 0; i < num; i++) {
         const user_name =  faker.internet.userName()
-        let password = faker.internet.password()
-        bcrypt.hash( password, 10, async (err, hashedPassword) => {
-            if (err){
+        const password = faker.internet.password()
+        userAndPasswordData.push(`user: ${user_name} password:${password}`)
+        
+        await bcrypt.hash(password, 10)
+        .then(hashedPassword =>{
+            const about = faker.lorem.sentences(2)
+            const birt_date = faker.date.past({ years: i+2})
+            const image = faker.image.avatar()
+            const email = faker.internet.email()
+            users.push({user_name, password: hashedPassword, about, birt_date, image, email})
+        })
+        .catch(err => {
             console.log(`error adding the password ${err}`);
             return 
-        }
-        userAndPasswordData.push(`user: ${user_name} password:${password}`)
-        password = hashedPassword   
-    });
-        const email = faker.internet.email()
-        const about = faker.lorem.sentences(2)
-        const birt_date = faker.date.past({ years: i+2})
-        const image = faker.image.avatar()
-        user.push({
-        user_name,
-        password,
-        email,
-        about,
-        birt_date,
-        image
-    });
-}
-
-return user;
+        })
+    }
+    console.log(users);
+    return users
 };
 
 const generatePosts = (users, num) => {
@@ -59,7 +54,7 @@ const generatePosts = (users, num) => {
 
     for (let i = 0; i<num; i++) {
         const author = users[Math.floor(Math.random()*users.length)]._id;
-        const content = faker.lorem.sentences(i*2 + 1);
+        const content = faker.lorem.sentences(i + 3);
         
         const likes = {}
         for (let j = 0; j <= i; j++){
@@ -108,7 +103,9 @@ const populate = async () =>{
     
     connectDB()
     let user = null 
-    await User.insertMany(generateUsers(5))
+    const generatedUser = await generateUsers(5)
+    console.log(generatedUser);
+    await User.insertMany(generatedUser)
     .then(docs => {
         console.log(`${docs.length} users have been inserted into the database.`);
         user = docs
