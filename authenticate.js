@@ -1,7 +1,8 @@
 const LocalStrategy = require("passport-local").Strategy;
+const GitHubStrategy = require("passport-github2")
 const User = require("./model/user")
-var bcrypt = require('bcryptjs');
-
+const bcrypt = require('bcryptjs');
+require("dotenv").config()
 
 const strategy = new LocalStrategy(async (username, password, done) => {
     console.log(`user:${username} password:${password}.`);
@@ -21,6 +22,38 @@ const strategy = new LocalStrategy(async (username, password, done) => {
         return done(err);
     };
 })
+
+const github = new GitHubStrategy({
+  clientID: process.env.REACT_APP_CLIENT_ID,
+  clientSecret: process.env.REACT_APP_CLIENT_SECRET,
+  callbackURL: "http://localhost:"+process.env.PORT+"/auth/github/callback"
+},
+ async (accessToken, refreshToken, profile, done) => {
+  try{
+   const user = await User.findOne({github_id:profile.id}).exec() 
+   if(user === null){
+     const user ={
+       user_name: profile.username,
+       github_id: profile.id,
+       email: 'undefined',
+       image: profile.photos[0].value
+     }
+     const dbuser = await bcrypt.hash(profile.login + profile.id,10)
+      .then(hashedPassword => {
+        user.password = hashedPassword
+        return new User(user)
+      })
+      const savedUser = await dbuser.save()
+      return done(null, savedUser)
+    }
+    return done(null, user)
+  }
+  catch (e){
+    return done(e,false)
+  }
+    return done(null, profile);
+}
+);
 
 const parseToken = (req,res,next) =>{
   const bearerHeader = req.headers['authorization']
@@ -49,3 +82,5 @@ exports.parseToken = parseToken
 exports.verifyToken = verifyToken
 
 exports.local_strategy = strategy
+
+exports.github_authentication = github

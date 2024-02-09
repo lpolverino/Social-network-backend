@@ -34,6 +34,19 @@ passport.use(
   authenticate.local_strategy
 );
 
+passport.use(
+  "github",
+  authenticate.github_authentication
+)
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
+
 app.use(cors())
 app.use(logger('dev'));
 app.use(express.json());

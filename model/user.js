@@ -12,6 +12,7 @@ const UserSchema = new Schema({
     sing_date:{type: Date, default: new Date()},
     followers:[{type: Schema.Types.ObjectId, ref: "User", require:true}],
     following:[{type: Schema.Types.ObjectId, ref: "User", require:true}],
+    github_id:{type:String},
 })
 
 

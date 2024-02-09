@@ -25,7 +25,6 @@ const connectDB = async () => {
 
 const generateUsers = async (num) => {
     const users = [];
-    const promises = []
     
     for (let i = 0; i < num; i++) {
         const user_name =  faker.internet.userName()

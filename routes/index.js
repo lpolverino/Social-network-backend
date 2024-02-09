@@ -32,4 +32,15 @@ router.post('/singup',(req,res,next) =>{
   res.json({message:"singup"})
 })
 
+router.get('/auth/github',
+  passport.authenticate('github', { scope: [ 'user:email' ],session:false })
+);
+
+router.get('/auth/github/callback', 
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
+
 module.exports = router;
