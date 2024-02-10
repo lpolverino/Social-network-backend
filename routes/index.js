@@ -16,9 +16,10 @@ router.post('/login',(req,res,next) =>{
   passport.authenticate('local', (err, user, info) => {
     console.log(`if error ${err}`);
     console.log(`user:${user}`);
+    console.log(info);
     if (err || !user) {
         return res.status(400).json({
-            message: 'Something is not right',
+            message: info.message,
             error:err,
         });
     } 
@@ -39,8 +40,19 @@ router.get('/auth/github',
 router.get('/auth/github/callback', 
   passport.authenticate('github', { failureRedirect: '/login' }),
   function(req, res) {
-    // Successful authentication, redirect home.
-    res.redirect('/');
+    // Successful authentication, redirect to front end app (refactor needed).
+    console.log("success github");
+    const token = jwt.sign({user:req.user}, process.env.SECRET_P)
+    console.log(`user: ${req.user._id} token:${token}`);
+    res.status(200).send(
+      `<!DOCTYPE html>
+        <html lang="en">
+          <body>
+          </body>
+          <script>
+          window.opener.postMessage(${JSON.stringify({token,user:req.user._id})}, 'http://localhost:5173/login')
+          </script>
+        </html>`);
   });
 
 module.exports = router;
