@@ -2,6 +2,7 @@ const LocalStrategy = require("passport-local").Strategy;
 const GitHubStrategy = require("passport-github2")
 const User = require("./model/user")
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken')
 require("dotenv").config()
 
 const strategy = new LocalStrategy(async (username, password, done) => {
@@ -51,7 +52,6 @@ const github = new GitHubStrategy({
   catch (e){
     return done(e,false)
   }
-    return done(null, profile);
 }
 );
 

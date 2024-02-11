@@ -10,8 +10,18 @@ const UserSchema = new Schema({
     image:{type:String},
     birt_date:{type: Date},
     sing_date:{type: Date, default: new Date()},
-    followers:[{type: Schema.Types.ObjectId, ref: "User", require:true}],
-    following:[{type: Schema.Types.ObjectId, ref: "User", require:true}],
+    followers:[{
+        type:Object, require:true, properties:{
+            _id:{type: Schema.Types.ObjectId, ref: "User", require:true},
+            username: {type:String, require:true, maxlength:100},
+        }
+    }],
+    following:[{
+        type:Object, require:true, properties:{
+            _id:{type: Schema.Types.ObjectId, ref: "User", require:true},
+            username: {type:String, require:true, maxlength:100},
+        }
+    }],
     github_id:{type:String},
 })
 
