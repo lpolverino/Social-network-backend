@@ -3,6 +3,7 @@ const GitHubStrategy = require("passport-github2")
 const User = require("./model/user")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
+const { jwtDecode } = require('jwt-decode');
 require("dotenv").config()
 
 const strategy = new LocalStrategy(async (username, password, done) => {
@@ -77,6 +78,15 @@ const verifyToken = (req,res,next) => {
   })
 }
 
+const verifyUser = (req,res,next) => {
+  const decodedToken = jwtDecode(req.token)
+  if(req.params.userId !== decodedToken.user._id){
+    return res.status(403).json({message:'You are not allowed to use this resource', err:Error()}) 
+  }
+  next()
+} 
+
+
 exports.parseToken = parseToken
 
 exports.verifyToken = verifyToken
@@ -84,3 +94,5 @@ exports.verifyToken = verifyToken
 exports.local_strategy = strategy
 
 exports.github_authentication = github
+
+exports.verifyUser = verifyUser

@@ -4,7 +4,7 @@ const authentication = require("../authenticate")
 const postControler = require("../controlers/postControler")
 
 
-router.post("/", authentication.parseToken, authentication.verifyToken,
+router.post("/:userId", authentication.parseToken, authentication.verifyToken, authentication.verifyUser,
     postControler.add_post
 );
 

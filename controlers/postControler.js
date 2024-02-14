@@ -5,30 +5,25 @@ const {body, validationResult} = require("express-validator")
 
 
 exports.add_post = [
-    body("author")
-    .trim()
-    .isLength({min:1,max:100})
-    .withMessage("author should not be empty")
-    .custom(async author =>{
-        const user = await User.findById(author).select("user_name").exec()
-        if(user === null){
-            throw new Error("author is not register")
-        }
-    }),
     body("content")
     .trim()
     .isLength({min:1, max:1000})
     .withMessage("content should not be empty"),
     asyncHandler( async (req,res,next) => {
         const errors = validationResult(req)
-
+        
         if(!errors.isEmpty()){
             return res.status(400).json({errors:errors.array()});
         }
 
+        const user = await User.findById(req.params.userId).select("user_name").exec()
+        if(user === null){
+            throw new Error("author is not register")
+        }
+
         const newPost = new Post({
-            author:req.body.author,
-            content:req.body.author,
+            author:user._id,
+            content:req.body.content,
         })
 
         const savedPost = await newPost.save()
