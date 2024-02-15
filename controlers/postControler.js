@@ -24,12 +24,52 @@ exports.add_post = [
         const newPost = new Post({
             author:user._id,
             content:req.body.content,
+            likes:{
+                total:0,
+                likes:[]
+            }
         })
 
         const savedPost = await newPost.save()
         if( savedPost ){
-            return res.status(200).json({postId:savedPost._id});   
+            return res.status(200).json({post:savedPost, post_author:user.user_name});   
         }
         return res.status(500).json({errors:{msg:"The Server cant process your request"}})
     })
 ]
+
+exports.add_like = asyncHandler( async (req,res,next) => {
+    const [user,post] = await Promise.all([
+        User.findById(req.params.userId),
+        Post.findById(req.params.postId)
+    ])
+    if(user === null || post === null){
+        return res.status(404).json({error:{msg:"the user or post dosent exists"}})
+    }
+
+    const userLikedThePost = post.likes.likes.filter(userWhoLikedPost => userWhoLikedPost.toString() === req.params.userId)
+    console.log(userLikedThePost);
+    console.log(user._id)
+    const newLikes = (userLikedThePost.length > 0)
+        ?{
+            total: post.likes.total - 1,
+            likes: post.likes.likes.filter(userWhoLikedPost => !userWhoLikedPost.equals(user._id))
+        }
+        :{
+            total: post.likes.total + 1,
+            likes: post.likes.likes.concat([user._id])
+        }    
+
+    const updatedPost = {
+        _id: post._id,
+        author:post.author,
+        content:post.content,
+        date: post.date,
+        comments:post.comments,
+        likes:newLikes,
+    }
+
+    const savedUpdatedPost = await Post.findByIdAndUpdate(req.params.postId,updatedPost,{})
+
+    return res.status(200).json({msg:"updated correctly", postId:savedUpdatedPost._id, newLikes})
+})

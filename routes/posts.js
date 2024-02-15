@@ -8,5 +8,8 @@ router.post("/:userId", authentication.parseToken, authentication.verifyToken, a
     postControler.add_post
 );
 
+router.post("/:postId/likes/:userId", authentication.parseToken,authentication.verifyToken, authentication.verifyUser,
+    postControler.add_like
+)
 
 module.exports = router;
