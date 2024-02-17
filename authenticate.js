@@ -78,7 +78,7 @@ const verifyToken = (req,res,next) => {
   })
 }
 
-const verifyUser = (req,res,next) => {
+const isTokenForRouteUser = (req,res,next) => {
   const decodedToken = jwtDecode(req.token)
   if(req.params.userId !== decodedToken.user._id){
     return res.status(403).json({message:'You are not allowed to use this resource', err:Error()}) 
@@ -95,4 +95,4 @@ exports.local_strategy = strategy
 
 exports.github_authentication = github
 
-exports.verifyUser = verifyUser
+exports.isTokenForRouteUser = isTokenForRouteUser 

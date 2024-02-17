@@ -7,7 +7,7 @@ const userControler = require("../controlers/userControler")
 /* GET users listing. */
 router.get("/:userId/profile",authentication.parseToken, authentication.verifyToken, userControler.user_profile)
 
-router.post("/:userId/follow", authentication.parseToken, authentication.verifyToken, authentication.verifyUser, 
+router.post("/:userId/follow", authentication.parseToken, authentication.verifyToken, authentication.isTokenForRouteUser, 
  userControler.add_following
 );
 

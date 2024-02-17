@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('socialnetwork:server');
 var http = require('http');
+const authenticate = require("../authenticate");
 
 /**
  * Get port from environment and store in Express.
@@ -28,6 +29,26 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+const io = require("socket.io")(server, {
+  cors:{
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+})
+
+const socketHandler = require("../socket/socket")
+
+io.on("connect", (socket) =>{
+  console.log('the User:' + socket.id +" has connected");
+  socketHandler.create_socket_handlers(socket)
+  socket.on("disconect", (socket) => {
+    console.log("the User: " + socket.id +" has run away");
+  })
+});
+
+
 
 /**
  * Normalize a port into a number, string, or false.

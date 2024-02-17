@@ -1,5 +1,6 @@
 const User = require("../model/user")
 const Post = require("../model/post")
+const Comment = require("../model/comment")
 const asyncHandler = require("express-async-handler")
 const {body, validationResult} = require("express-validator")
 
@@ -73,3 +74,46 @@ exports.add_like = asyncHandler( async (req,res,next) => {
 
     return res.status(200).json({msg:"updated correctly", postId:savedUpdatedPost._id, newLikes})
 })
+
+exports.add_comment = [
+    body("comment")
+    .trim()
+    .isLength()
+    .withMessage("Comment should not be empty"),
+    asyncHandler( async (req,res,next) => {
+        const errors = validationResult(req.body)
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors:errors.array()})
+        }
+        const [user, post] = await Promise.all([
+            User.findById(req.params.userId),
+            Post.findById(req.params.postId),   
+        ]) 
+        if(user === null || post === null){
+            return res.status(404).json({errors:{msg:"User or Post Dont founded"}})
+        }
+        const comment = new Comment({
+            auhtor:user._id,
+            post:post._id,
+            comment:req.body.comment,
+        })
+
+        const savedComment = await comment.save()
+        
+        const updatedPost = {
+            _id: post._id,
+            author:post.author,
+            date:post.date,
+            content:post.content,
+            likes:post.likes,
+            comments: post.comments.concat([savedComment._id])
+        }
+
+        const savedPost = await Post.findByIdAndUpdate(req.params.postId, updatedPost, {})
+
+        return res.status(200).json({
+            msg:"comment posted correctly",
+            comment:savedComment
+        })
+    })
+]
