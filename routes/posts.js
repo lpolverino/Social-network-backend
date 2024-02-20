@@ -15,4 +15,7 @@ router.post("/:postId/likes/:userId", authentication.parseToken,authentication.v
 router.post("/:postId/comments/:userId",authentication.parseToken,authentication.verifyToken, authentication.isTokenForRouteUser,
 postControler.add_comment)
 
+router. get("/:postId/comments",authentication.parseToken,authentication.verifyToken,
+    postControler.get_comments)
+
 module.exports = router;

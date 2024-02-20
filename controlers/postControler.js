@@ -40,7 +40,6 @@ const addNotification = async (userToAddNotification, userWhoCreatedNotificaion 
     return savedUser
 }
 
-
 exports.add_post = [
     body("content")
     .trim()
@@ -134,7 +133,7 @@ exports.add_comment = [
             return res.status(404).json({errors:{msg:"User or Post Dont founded"}})
         }
         const comment = new Comment({
-            auhtor:user._id,
+            author:user._id,
             post:post._id,
             comment:req.body.comment,
         })
@@ -161,3 +160,10 @@ exports.add_comment = [
         })
     })
 ]
+
+exports.get_comments = asyncHandler( async (req,res,next) => {
+    const comments = await Comment.find({post:req.params.postId}).populate("author","user_name").select("-post").exec()
+    if(comments == null || comments === undefined) return res.status(500).json({error:{msg:"Cannot get the comments"}})
+    console.log(comments);
+    return res.status(200).json({comments})
+})

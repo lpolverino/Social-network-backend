@@ -90,6 +90,11 @@ const isTokenForRouteUser = (req,res,next) => {
   next()
 } 
 
+const addUser = (req,res,next) => {
+  const decodedToken = jwtDecode(req.token)
+  req.userId = decodedToken.user._id
+  next()
+}
 
 exports.parseToken = parseToken
 
@@ -100,3 +105,5 @@ exports.local_strategy = strategy
 exports.github_authentication = github
 
 exports.isTokenForRouteUser = isTokenForRouteUser 
+
+exports.addUser = addUser

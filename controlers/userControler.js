@@ -1,4 +1,5 @@
 const User = require("../model/user")
+const Post = require("../model/post")
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 
@@ -122,4 +123,18 @@ exports.read_notifications = asyncHandler( async (req,res,next) => {
     if (savedUser === null || savedUser === undefined) 
         return res.status(500).json({msg:"Error Clearing the Notifications"})
     return res.status(200).json({msg:"User Read the Notificatiosn"})
+})
+
+exports.index_posts = asyncHandler ( async (req,res,next) => {
+    const user = await User.findById(req.userId).select("-password").exec()
+
+    if(user === null) return res.status(404).json({error:{msg:"Invalid user"}})
+
+    const folloUsersId = user.following.map(user => user._id).concat([req.userId])
+
+    const posts = await Post.find({author:{$in:folloUsersId}}).limit(50).sort({date:1}).populate("author", "user_name").exec()
+
+    console.log(posts);
+
+    return res.status(200).json({posts})
 })
