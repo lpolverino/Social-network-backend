@@ -4,6 +4,42 @@ const Comment = require("../model/comment")
 const asyncHandler = require("express-async-handler")
 const {body, validationResult} = require("express-validator")
 
+const addNotification = async (userToAddNotification, userWhoCreatedNotificaion ,postId, content) => {
+    const user = await User.findById(userToAddNotification).exec()
+    if(user === null || user === undefined) return undefined
+
+    const newNotification = {
+        type:"Post",
+        content: content,
+        url:postId,
+    }
+    const userWithNewNotification = {
+        _id:user._id,
+        user_name:user.user_name,
+        password:user.password,
+        email:user.email,
+        about:user.about,
+        image:user.image,
+        birth_date:user.birt_date,
+        sing_date:user.sing_date,
+        followers:user.followers,
+        following:user.following,
+        github_id:user.github_id,
+        notifications:{
+            unread:true,
+            notifications:user.notifications.notifications.concat([newNotification])
+        }
+    }
+    const savedUser = await User.findByIdAndUpdate(userToAddNotification, userWithNewNotification, {})
+    if(savedUser === null || savedUser === undefined )
+        return undefined
+    // send notification if connected
+
+    
+
+    return savedUser
+}
+
 
 exports.add_post = [
     body("content")
@@ -70,7 +106,12 @@ exports.add_like = asyncHandler( async (req,res,next) => {
         likes:newLikes,
     }
 
+    const savedUser = await addNotification(post.author, req.params.userId,req.params.postId, `The User ${req.params.userId} liked your Post`)
+    
+    if(savedUser === undefined) return res.status(500).json({msg:"Error Liking The post"})
     const savedUpdatedPost = await Post.findByIdAndUpdate(req.params.postId,updatedPost,{})
+
+    if(savedUpdatedPost === undefined) return res.status(500).json({msg:"Error Liking The post"})
 
     return res.status(200).json({msg:"updated correctly", postId:savedUpdatedPost._id, newLikes})
 })
@@ -108,9 +149,12 @@ exports.add_comment = [
             likes:post.likes,
             comments: post.comments.concat([savedComment._id])
         }
+        const savedUser = await addNotification(post.author,req.params.userId, req.params.postId, `The User ${req.params.userId} Commented in your Post`)
+        if(savedUser === undefined) return res.status(500).json({msg:"Error Liking The post"})
 
-        const savedPost = await Post.findByIdAndUpdate(req.params.postId, updatedPost, {})
-
+        const savedUpdatedPost = await Post.findByIdAndUpdate(req.params.postId, updatedPost, {})
+        if(savedUpdatedPost === undefined) return res.status(500).json({msg:"Error Liking The post"})
+        
         return res.status(200).json({
             msg:"comment posted correctly",
             comment:savedComment

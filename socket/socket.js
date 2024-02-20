@@ -1,16 +1,14 @@
 const ping = require("./pingSocket")
 const user = require("./userSocket")
-const clientSockets = require("./ClientSocketId")
-const clientsSockets = clientSockets.createClientSockets()
 
 const socketHandler = {
-  createSocket: (socket) => {
+  createSocket: (socket, clientsSockets) => {
     console.log("Adding Ping Events");
     socket.on("ping", ping.ping)
     console.log("Adding users Envets");
     const userEvents = user.createUserEvents(socket, clientsSockets)
     socket.on("username", userEvents.add_user)
-    socket.on("following", userEvents.follow)
+    socket.on("notify", userEvents.notify)
   }
 }
 

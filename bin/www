@@ -40,9 +40,13 @@ const io = require("socket.io")(server, {
 
 const socketHandler = require("../socket/socket")
 
+const clientSockets = require("../socket/ClientSocketId")
+const clientsSockets = clientSockets.createClientSockets()
+
+
 io.on("connect", (socket) =>{
   console.log('the User:' + socket.id +" has connected");
-  socketHandler.create_socket_handlers(socket)
+  socketHandler.create_socket_handlers(socket, clientsSockets)
   socket.on("disconect", (socket) => {
     console.log("the User: " + socket.id +" has run away");
   })

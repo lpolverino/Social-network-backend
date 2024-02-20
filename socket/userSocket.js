@@ -3,12 +3,15 @@ const createUserEvents = (socket, clientSockets) => {
     console.log("adding" + userId);
     clientSockets.add_user(socket.id, userId)
   }
-  const follow = (followedId) => {
-    console.log(`notifying ${followedId}`);
+  const notify = (followedUser) => {
+    const notifySocket = clientSockets.get_user(followedUser.followId)
+    console.log(`notifying ${notifySocket} from ${socket.id}`);
+    socket.to(notifySocket).emit("notification", "you have a notification")
   }
+
   return{
     add_user,
-    follow
+    notify,
   }
 }
 

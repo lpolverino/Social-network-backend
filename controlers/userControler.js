@@ -1,8 +1,6 @@
 const User = require("../model/user")
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
-var bcrypt = require('bcryptjs');
-
 
 exports.add_following = [
     body("username")
@@ -25,9 +23,11 @@ exports.add_following = [
             return res.status(404).json({errors:{msg:"Invalid User"}})
         }
 
-        const alreadyFollowing = user.following.filter(el => el._id === userToFollow._id)
+        const alreadyFollowing = user.following.filter(el => el._id.toString() === userToFollow._id.toString())
 
-        if(alreadyFollowing) return res.status(400).json({errors:{msg:"Already Fallowing"}})
+        console.log(alreadyFollowing);
+
+        if(alreadyFollowing.length > 0) return res.status(400).json({errors:{msg:"Already Fallowing"}})
 
         const userWithNewFollowing = {
             _id: user._id,
@@ -46,6 +46,12 @@ exports.add_following = [
             github_id:user.github_id
         }
 
+        const notification = {
+            type:"Follow",
+            content: `the User ${user.user_name} started to follow You`,
+            url:user._id
+        }
+
         const userWithNewFallower = {
             _id:userToFollow._id,
             user_name:userToFollow.user_name,
@@ -61,13 +67,17 @@ exports.add_following = [
             }]),
             following:userToFollow.following,
             github_id:userToFollow.github_id,
+            notifications:{
+                unread:true,
+                notifications:userToFollow.notifications.notifications.concat([notification])
+            }
         }
 
         const [updatedFollowerUser,updatedFollowedUser] = await Promise.all([
             User.findByIdAndUpdate(req.params.userId, userWithNewFollowing, {}),
             User.findByIdAndUpdate(userToFollow._id,userWithNewFallower, {})
         ])
-        
+       
         if(updatedFollowerUser === null || updatedFollowedUser === null) {
             return res.status(500).json({errors:{msg:"internal error"}})
         }
@@ -81,4 +91,35 @@ exports.user_profile = asyncHandler( async (req,res,next) => {
         return res.status(404).json({error:{msg:"The solicited user Porfile dosent Exists"}})
     }
     return res.status(200).json({user:user})
+})
+
+exports.read_notifications = asyncHandler( async (req,res,next) => {
+    const user = await User.findById(req.params.userId).exec();
+    
+    if(user === null) {
+        return res.status(404).json({error:{msg:"User not found"}})
+    }
+
+    const userWithOutNotifications = {
+         _id:user._id,
+        user_name:user.user_name,
+        password:user.password,
+        email:user.email,
+        about:user.about,
+        image:user.image,
+        birth_date:user.birt_date,
+        sing_date:user.sing_date,
+        followers:user.followers,
+        following:user.following,
+        github_id:user.github_id,
+        notifications:{
+            unread:false,
+            notifications:user.notifications
+        }
+    }    
+
+    const savedUser = await User.findByIdAndUpdate(req.params.userId, userWithOutNotifications, {})
+    if (savedUser === null || savedUser === undefined) 
+        return res.status(500).json({msg:"Error Clearing the Notifications"})
+    return res.status(200).json({msg:"User Read the Notificatiosn"})
 })

@@ -65,7 +65,11 @@ router.post('/singup',
         return new User({
           user_name:req.body.username,
           password: hashedPassword,
-          email:req.body.email
+          email:req.body.email,
+          notifications:{
+            unread:false,
+            notifications:[]
+          }
         })
       })
       .catch( e =>{

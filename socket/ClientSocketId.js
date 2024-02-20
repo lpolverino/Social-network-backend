@@ -6,6 +6,7 @@ const createClientSockets = () => {
   }
 
   const get_user = (userID) => {
+    console.log(ClientsSocketsId);
     return ClientsSocketsId[`${userID}`]
   }
   return {

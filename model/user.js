@@ -22,6 +22,14 @@ const UserSchema = new Schema({
             username: {type:String, require:true, maxlength:100},
         }
     }],
+    notifications: {type:Object, require:true, properties:{
+        unread:{type:Boolean, require:true, default:false},
+        notifications:[{type:Object, require:true, properties:{
+            type:{type:String, require:true, enum:["Follow", "Post"]},
+            content:{type:String, require:true},
+            url:{type:String, required:true}
+        }}]
+    }},
     github_id:{type:String},
 })
 

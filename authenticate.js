@@ -38,7 +38,11 @@ const github = new GitHubStrategy({
        user_name: profile.username,
        github_id: profile.id,
        email: 'undefined',
-       image: profile.photos[0].value
+       image: profile.photos[0].value,
+       notifications:{
+        unread:false,
+        notifications:[]
+       },
      }
      const dbuser = await bcrypt.hash(profile.login + profile.id,10)
       .then(hashedPassword => {

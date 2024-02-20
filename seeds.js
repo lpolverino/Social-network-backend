@@ -37,7 +37,18 @@ const generateUsers = async (num) => {
             const birt_date = faker.date.past({ years: i+2})
             const image = faker.image.avatar()
             const email = faker.internet.email()
-            users.push({user_name, password: hashedPassword, about, birt_date, image, email})
+            users.push({
+                user_name,
+                password: hashedPassword,
+                about,
+                birt_date,
+                image,
+                email,
+                notifications:{
+                    unread:false,
+                    notifications:[]
+                }
+            })
         })
         .catch(err => {
             console.log(`error adding the password ${err}`);
@@ -91,7 +102,7 @@ const generateComments = (users, posts, num) =>{
         comments.push({
             author,
             post,
-            content
+            comment:content,
         })
     }
     
@@ -103,7 +114,6 @@ const populate = async () =>{
     connectDB()
     let user = null 
     const generatedUser = await generateUsers(5)
-    console.log(generatedUser);
     await User.insertMany(generatedUser)
     .then(docs => {
         console.log(`${docs.length} users have been inserted into the database.`);
