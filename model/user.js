@@ -31,6 +31,7 @@ const UserSchema = new Schema({
         }}]
     }},
     github_id:{type:String},
+    github_image:{type:String},
 })
 
 

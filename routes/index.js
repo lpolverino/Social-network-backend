@@ -7,6 +7,8 @@ const asyncHandler = require('express-async-handler')
 const { body, validationResult } = require("express-validator")
 const User = require("../model/user")
 const bcrypt = require('bcryptjs');
+const utils = require("../utils")
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -59,6 +61,7 @@ router.post('/singup',
     if(user !== null){
       return res.status(400).send({errors:[{msg:"username already taken"}]})      
     }
+    const imageUrl = utils.getGravatarHash(req.body.email)
 
     const newUser = await bcrypt.hash(req.body.password, 10)
       .then(hashedPassword => {
@@ -66,18 +69,19 @@ router.post('/singup',
           user_name:req.body.username,
           password: hashedPassword,
           email:req.body.email,
+          image: imageUrl,
           notifications:{
             unread:false,
             notifications:[]
-          }
+          },
         })
       })
       .catch( e =>{
         return res.status(500).json({errors:[{msg:"cannot save user"}]})
       })
-      const savedUser = await newUser.save()
- 
-    const token = jwt.sign({savedUser}, process.env.SECRET_P);
+    console.log(newUser);
+    const savedUser = await newUser.save()
+    const token = jwt.sign({user:newUser}, process.env.SECRET_P);
     return res.json({token,user:savedUser._id});
   })
 );

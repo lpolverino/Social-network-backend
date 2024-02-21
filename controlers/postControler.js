@@ -25,6 +25,7 @@ const addNotification = async (userToAddNotification, userWhoCreatedNotificaion 
         followers:user.followers,
         following:user.following,
         github_id:user.github_id,
+        github_image:user.github_image,
         notifications:{
             unread:true,
             notifications:user.notifications.notifications.concat([newNotification])
@@ -33,10 +34,7 @@ const addNotification = async (userToAddNotification, userWhoCreatedNotificaion 
     const savedUser = await User.findByIdAndUpdate(userToAddNotification, userWithNewNotification, {})
     if(savedUser === null || savedUser === undefined )
         return undefined
-    // send notification if connected
-
     
-
     return savedUser
 }
 

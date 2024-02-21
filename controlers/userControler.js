@@ -44,7 +44,8 @@ exports.add_following = [
                 _id:userToFollow._id,
                 username:userToFollow.user_name,
             }]),
-            github_id:user.github_id
+            github_id:user.github_id,
+            github_image:user.github_image,
         }
 
         const notification = {
@@ -68,6 +69,7 @@ exports.add_following = [
             }]),
             following:userToFollow.following,
             github_id:userToFollow.github_id,
+            github_image: userToFollow.github_image,
             notifications:{
                 unread:true,
                 notifications:userToFollow.notifications.notifications.concat([notification])
@@ -113,6 +115,7 @@ exports.read_notifications = asyncHandler( async (req,res,next) => {
         followers:user.followers,
         following:user.following,
         github_id:user.github_id,
+        github_image: user.github_image,
         notifications:{
             unread:false,
             notifications:user.notifications

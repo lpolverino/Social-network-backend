@@ -38,11 +38,12 @@ const github = new GitHubStrategy({
        user_name: profile.username,
        github_id: profile.id,
        email: 'undefined',
-       image: profile.photos[0].value,
+       github_image: profile.photos[0].value,
        notifications:{
         unread:false,
         notifications:[]
        },
+       image:""
      }
      const dbuser = await bcrypt.hash(profile.login + profile.id,10)
       .then(hashedPassword => {
@@ -92,6 +93,7 @@ const isTokenForRouteUser = (req,res,next) => {
 
 const addUser = (req,res,next) => {
   const decodedToken = jwtDecode(req.token)
+  console.log(decodedToken);
   req.userId = decodedToken.user._id
   next()
 }
