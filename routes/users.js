@@ -14,7 +14,11 @@ router.post("/:userId/follow", authentication.parseToken, authentication.verifyT
 router.put("/:userId/notifications", authentication.parseToken, authentication.verifyToken, authentication.isTokenForRouteUser,
 userControler.read_notifications);
 
-router.get("/index", authentication.parseToken, authentication.verifyToken,authentication.addUser,
+router.get("/index", authentication.parseToken, authentication.verifyToken, authentication.addUser,
 userControler.index_posts)
+
+router.get("/:userId/posts", authentication.parseToken, authentication.verifyToken,
+userControler.get_user_posts
+)
 
 module.exports = router;

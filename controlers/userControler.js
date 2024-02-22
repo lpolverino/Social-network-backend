@@ -93,7 +93,14 @@ exports.user_profile = asyncHandler( async (req,res,next) => {
     if(user === null){
         return res.status(404).json({error:{msg:"The solicited user Porfile dosent Exists"}})
     }
-    return res.status(200).json({user:user})
+
+    const userPost = await Post.find({author:user._id}).populate("author","user_name").exec()
+
+    if (userPost=== null | userPost === undefined) {
+        return res.status(500).json({error:{msg:"There was an error fetching the posts of the user " + user._id}})
+    }
+
+    return res.status(200).json({user:user, posts:userPost})
 })
 
 exports.read_notifications = asyncHandler( async (req,res,next) => {
@@ -140,4 +147,8 @@ exports.index_posts = asyncHandler ( async (req,res,next) => {
     console.log(posts);
 
     return res.status(200).json({posts})
+})
+
+exports.get_user_posts = asyncHandler( async (req,res,next) => {
+
 })
