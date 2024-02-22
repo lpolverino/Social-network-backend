@@ -142,7 +142,7 @@ exports.index_posts = asyncHandler ( async (req,res,next) => {
 
     const folloUsersId = user.following.map(user => user._id).concat([req.userId])
 
-    const posts = await Post.find({author:{$in:folloUsersId}}).limit(50).sort({date:1}).populate("author", "user_name").exec()
+    const posts = await Post.find({author:{$in:folloUsersId}}).limit(50).sort({date:-1}).populate("author", "user_name").exec()
 
     console.log(posts);
 
