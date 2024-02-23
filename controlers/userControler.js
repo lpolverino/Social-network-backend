@@ -125,7 +125,7 @@ exports.read_notifications = asyncHandler( async (req,res,next) => {
         github_image: user.github_image,
         notifications:{
             unread:false,
-            notifications:user.notifications
+            notifications:user.notifications.notifications
         }
     }    
 

@@ -13,6 +13,7 @@ const addNotification = async (userToAddNotification, userWhoCreatedNotificaion 
         content: content,
         url:postId,
     }
+
     const userWithNewNotification = {
         _id:user._id,
         user_name:user.user_name,
