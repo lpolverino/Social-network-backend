@@ -11,4 +11,16 @@ const getGravatarHash =  (email) => {
   return undefined
 }
 
+const errorToJson = (info, error) => {
+  return {error:{msg:info, error}}
+}
+
+const parseErrorsToJson = (errors) => {
+  return errors.map(error => {
+    return {error:{msg:error.msg}}}
+    )
+}
+
 exports.getGravatarHash = getGravatarHash
+exports.errorToJson = errorToJson
+exports.parseErrorsToJson = parseErrorsToJson

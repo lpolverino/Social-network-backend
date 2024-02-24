@@ -20,14 +20,8 @@ router.get('/private', authentication.parseToken,authentication.verifyToken, (re
 })
 router.post('/login',(req,res,next) =>{
   passport.authenticate('local', (err, user, info) => {
-    console.log(`if error ${err}`);
-    console.log(`user:${user}`);
-    console.log(info);
     if (err || !user) {
-        return res.status(400).json({
-            message: info.message,
-            error:err,
-        });
+        return res.status(400).json(utils.errorToJson(info.message,err));
     } 
     const token = jwt.sign({user}, process.env.SECRET_P);
     return res.json({token,user:user._id});
@@ -53,7 +47,7 @@ router.post('/singup',
   asyncHandler(async (req,res,next) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).send({ errors: result.array() });
+      return res.status(400).json({ errors: utils.parseErrorsToJson(result.array() )});
     }
 
     const user = await User.findOne({user_name:req.body.username}).select("user_name").exec()
