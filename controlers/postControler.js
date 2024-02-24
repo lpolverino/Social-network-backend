@@ -3,6 +3,7 @@ const Post = require("../model/post")
 const Comment = require("../model/comment")
 const asyncHandler = require("express-async-handler")
 const {body, validationResult} = require("express-validator")
+const utils = require("../utils")
 
 const addNotification = async (userToAddNotification, userWhoCreatedNotificaion ,postId, content) => {
     const user = await User.findById(userToAddNotification).exec()
@@ -48,12 +49,12 @@ exports.add_post = [
         const errors = validationResult(req)
         
         if(!errors.isEmpty()){
-            return res.status(400).json({errors:errors.array()});
+            return res.status(400).json({errors:utils.parseErrorsToJson( errors.array())});
         }
 
         const user = await User.findById(req.params.userId).select("user_name").exec()
         if(user === null){
-            throw new Error("author is not register")
+            return res.status(403).json({error: utils.errorToJson("author is not register")})
         }
 
         const newPost = new Post({
@@ -69,7 +70,7 @@ exports.add_post = [
         if( savedPost ){
             return res.status(200).json({post:savedPost, post_author:user.user_name});   
         }
-        return res.status(500).json({errors:{msg:"The Server cant process your request"}})
+        return res.status(500).json({errors:utils.errorToJson("The Server cant process your request")})
     })
 ]
 
@@ -79,12 +80,10 @@ exports.add_like = asyncHandler( async (req,res,next) => {
         Post.findById(req.params.postId)
     ])
     if(user === null || post === null){
-        return res.status(404).json({error:{msg:"the user or post dosent exists"}})
+        return res.status(404).json({error:utils.errorToJson("the user or post dosent exists")})
     }
 
     const userLikedThePost = post.likes.likes.filter(userWhoLikedPost => userWhoLikedPost.toString() === req.params.userId)
-    console.log(userLikedThePost);
-    console.log(user._id)
     const newLikes = (userLikedThePost.length > 0)
         ?{
             total: post.likes.total - 1,
@@ -106,10 +105,10 @@ exports.add_like = asyncHandler( async (req,res,next) => {
 
     const savedUser = await addNotification(post.author, req.params.userId,req.params.postId, `The User ${req.params.userId} liked your Post`)
     
-    if(savedUser === undefined) return res.status(500).json({msg:"Error Liking The post"})
+    if(savedUser === undefined) return res.status(500).json({error:utils.errorToJson("Error Liking The post")})
     const savedUpdatedPost = await Post.findByIdAndUpdate(req.params.postId,updatedPost,{})
 
-    if(savedUpdatedPost === undefined) return res.status(500).json({msg:"Error Liking The post"})
+    if(savedUpdatedPost === undefined) return res.status(500).json({error: utils.errorToJson("Error Liking The post")})
 
     return res.status(200).json({msg:"updated correctly", postId:savedUpdatedPost._id, newLikes})
 })
@@ -122,14 +121,14 @@ exports.add_comment = [
     asyncHandler( async (req,res,next) => {
         const errors = validationResult(req.body)
         if(!errors.isEmpty()){
-            return res.status(400).json({errors:errors.array()})
+            return res.status(400).json({errors: utils.parseErrorsToJson(errors.array())})
         }
         const [user, post] = await Promise.all([
             User.findById(req.params.userId),
             Post.findById(req.params.postId),   
         ]) 
         if(user === null || post === null){
-            return res.status(404).json({errors:{msg:"User or Post Dont founded"}})
+            return res.status(404).json({errors:utils.errorToJson("User or Post Dont founded")})
         }
         const comment = new Comment({
             author:user._id,
@@ -148,10 +147,10 @@ exports.add_comment = [
             comments: post.comments.concat([savedComment._id])
         }
         const savedUser = await addNotification(post.author,req.params.userId, req.params.postId, `The User ${req.params.userId} Commented in your Post`)
-        if(savedUser === undefined) return res.status(500).json({msg:"Error Liking The post"})
+        if(savedUser === undefined) return res.status(500).json({error: utils.errorToJson("Error Liking The post")})
 
         const savedUpdatedPost = await Post.findByIdAndUpdate(req.params.postId, updatedPost, {})
-        if(savedUpdatedPost === undefined) return res.status(500).json({msg:"Error Liking The post"})
+        if(savedUpdatedPost === undefined) return res.status(500).json({error: utils.errorToJson("Error Liking The post")})
         
         return res.status(200).json({
             msg:"comment posted correctly",
@@ -162,7 +161,7 @@ exports.add_comment = [
 
 exports.get_comments = asyncHandler( async (req,res,next) => {
     const comments = await Comment.find({post:req.params.postId}).populate("author","user_name").select("-post").exec()
-    if(comments == null || comments === undefined) return res.status(500).json({error:{msg:"Cannot get the comments"}})
+    if(comments == null || comments === undefined) return res.status(500).json({error:utils.errorToJson("Cannot get the comments")})
     console.log(comments);
     return res.status(200).json({comments})
 })

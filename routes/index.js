@@ -53,7 +53,7 @@ router.post('/singup',
     const user = await User.findOne({user_name:req.body.username}).select("user_name").exec()
 
     if(user !== null){
-      return res.status(400).send({errors:[{msg:"username already taken"}]})      
+      return res.status(400).send({errors: utils.errorToJson("username already taken")})      
     }
     const imageUrl = utils.getGravatarHash(req.body.email)
 
@@ -71,9 +71,8 @@ router.post('/singup',
         })
       })
       .catch( e =>{
-        return res.status(500).json({errors:[{msg:"cannot save user"}]})
+        return res.status(500).json({errors: utils.errorToJson("cannot save user")})
       })
-    console.log(newUser);
     const savedUser = await newUser.save()
     const token = jwt.sign({user:newUser}, process.env.SECRET_P);
     return res.json({token,user:savedUser._id});
@@ -88,9 +87,7 @@ router.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect to front end app (refactor needed).
-    console.log("success github");
     const token = jwt.sign({user:req.user}, process.env.SECRET_P)
-    console.log(`user: ${req.user._id} token:${token}`);
     res.status(200).send(
       `<!DOCTYPE html>
         <html lang="en">

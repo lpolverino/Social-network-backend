@@ -2,6 +2,8 @@ const User = require("../model/user")
 const Post = require("../model/post")
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const utils = require("../utils")
+
 
 exports.add_following = [
     body("username")
@@ -11,24 +13,22 @@ exports.add_following = [
     asyncHandler( async (req,res,next) => {
         const result = validationResult(req);
         if (!result.isEmpty()) {
-            return res.status(400).json({ errors: result.array() });
+            return res.status(400).json({ errors: utils.parseErrorsToJson(result.array()) });
         }
 
         const userToFollow = await User.findOne({user_name:req.body.username}).exec()
         if (userToFollow === null) {
-            return res.status(400).json({errors:{msg:"User not found"}})
+            return res.status(400).json({errors:utils.errorToJson("User not found")})
         }
 
         const user = await User.findById(req.params.userId).exec()
         if(user === null){
-            return res.status(404).json({errors:{msg:"Invalid User"}})
+            return res.status(404).json({errors:utils.errorToJson("Invalid User")})
         }
 
         const alreadyFollowing = user.following.filter(el => el._id.toString() === userToFollow._id.toString())
 
-        console.log(alreadyFollowing);
-
-        if(alreadyFollowing.length > 0) return res.status(400).json({errors:{msg:"Already Fallowing"}})
+        if(alreadyFollowing.length > 0) return res.status(400).json({errors:utils.errorToJson("Already Fallowing")})
 
         const userWithNewFollowing = {
             _id: user._id,
@@ -82,7 +82,7 @@ exports.add_following = [
         ])
        
         if(updatedFollowerUser === null || updatedFollowedUser === null) {
-            return res.status(500).json({errors:{msg:"internal error"}})
+            return res.status(500).json({errors:utils.errorToJson("internal error")})
         }
         return res.status(200).json({msg:"following completed", followedUser:{_id:userToFollow._id, username:userToFollow.user_name}})
     })
@@ -91,13 +91,13 @@ exports.add_following = [
 exports.user_profile = asyncHandler( async (req,res,next) => {
     const user = await User.findById(req.params.userId).select("-password").exec()
     if(user === null){
-        return res.status(404).json({error:{msg:"The solicited user Porfile dosent Exists"}})
+        return res.status(404).json({error:utils.errorToJson("The solicited user Porfile dosent Exists")})
     }
 
     const userPost = await Post.find({author:user._id}).populate("author","user_name").exec()
 
     if (userPost=== null | userPost === undefined) {
-        return res.status(500).json({error:{msg:"There was an error fetching the posts of the user " + user._id}})
+        return res.status(500).json({error:utils.errorToJson("There was an error fetching the posts of the user " + user._id)})
     }
 
     return res.status(200).json({user:user, posts:userPost})
@@ -107,7 +107,7 @@ exports.read_notifications = asyncHandler( async (req,res,next) => {
     const user = await User.findById(req.params.userId).exec();
     
     if(user === null) {
-        return res.status(404).json({error:{msg:"User not found"}})
+        return res.status(404).json({error:utils.errorToJson("User not found")})
     }
 
     const userWithOutNotifications = {
@@ -131,20 +131,18 @@ exports.read_notifications = asyncHandler( async (req,res,next) => {
 
     const savedUser = await User.findByIdAndUpdate(req.params.userId, userWithOutNotifications, {})
     if (savedUser === null || savedUser === undefined) 
-        return res.status(500).json({msg:"Error Clearing the Notifications"})
+        return res.status(500).json({error: utils.errorToJson("Error Clearing the Notifications")})
     return res.status(200).json({msg:"User Read the Notificatiosn"})
 })
 
 exports.index_posts = asyncHandler ( async (req,res,next) => {
     const user = await User.findById(req.userId).select("-password").exec()
 
-    if(user === null) return res.status(404).json({error:{msg:"Invalid user"}})
+    if(user === null) return res.status(404).json({error:utils.errorToJson("Invalid user")})
 
     const folloUsersId = user.following.map(user => user._id).concat([req.userId])
 
     const posts = await Post.find({author:{$in:folloUsersId}}).limit(50).sort({date:-1}).populate("author", "user_name").exec()
-
-    console.log(posts);
 
     return res.status(200).json({posts})
 })

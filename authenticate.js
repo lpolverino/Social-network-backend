@@ -5,17 +5,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 const { jwtDecode } = require('jwt-decode');
 require("dotenv").config()
+const utils = require("./utils")
 
 const strategy = new LocalStrategy(async (username, password, done) => {
-    console.log(`user:${username} password:${password}.`);
       try {
         const user = await User.findOne({ user_name: username }).exec();
         if (!user) {
           return done(null, false, { message: "Incorrect username" });
         };
-        console.log(user.password);
         const match = await bcrypt.compare(password, user.password);
-        console.log("match result" + match);
         if (!match) {
           return done(null, false, { message: "Incorrect password" })
         }
@@ -69,14 +67,14 @@ const parseToken = (req,res,next) =>{
     req.token = bearerToken;
     next()
   } else{
-    res.status(403).json({message:"Invalid Authorizations Header"})
+    res.status(403).json({error:utils.errorToJson("Invalid Authorizations Header")})
   }
 }
 
 const verifyToken = (req,res,next) => {
   jwt.verify(req.token, process.env.SECRET_P, (err, authData) => {
     if(err){
-      return res.status(403).json({message:`Validation Fail`, error:err})
+      return res.status(403).json({error:utils.errorToJson(`Validation Fail`, err)})
     }else{
      next() 
     }
@@ -86,14 +84,13 @@ const verifyToken = (req,res,next) => {
 const isTokenForRouteUser = (req,res,next) => {
   const decodedToken = jwtDecode(req.token)
   if(req.params.userId !== decodedToken.user._id){
-    return res.status(403).json({message:'You are not allowed to use this resource', err:Error()}) 
+    return res.status(403).json({error: utils.errorToJson('You are not allowed to use this resource')}) 
   }
   next()
 } 
 
 const addUser = (req,res,next) => {
   const decodedToken = jwtDecode(req.token)
-  console.log(decodedToken);
   req.userId = decodedToken.user._id
   next()
 }
