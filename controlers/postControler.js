@@ -103,7 +103,7 @@ exports.add_like = asyncHandler( async (req,res,next) => {
         likes:newLikes,
     }
 
-    const savedUser = await addNotification(post.author, req.params.userId,req.params.postId, `The User ${req.params.userId} liked your Post`)
+    const savedUser = await addNotification(post.author, req.params.userId,req.params.postId, `The User ${user.user_name} liked your Post`)
     
     if(savedUser === undefined) return res.status(500).json(utils.errorToJson("Error Liking The post"))
     const savedUpdatedPost = await Post.findByIdAndUpdate(req.params.postId,updatedPost,{})
@@ -146,7 +146,7 @@ exports.add_comment = [
             likes:post.likes,
             comments: post.comments.concat([savedComment._id])
         }
-        const savedUser = await addNotification(post.author,req.params.userId, req.params.postId, `The User ${req.params.userId} Commented in your Post`)
+        const savedUser = await addNotification(post.author,req.params.userId, req.params.postId, `The User ${user.user_name} Commented in your Post`)
         if(savedUser === undefined) return res.status(500).json( utils.errorToJson("Error Liking The post"))
 
         const savedUpdatedPost = await Post.findByIdAndUpdate(req.params.postId, updatedPost, {})
@@ -164,4 +164,10 @@ exports.get_comments = asyncHandler( async (req,res,next) => {
     if(comments == null || comments === undefined) return res.status(500).json(utils.errorToJson("Cannot get the comments"))
     console.log(comments);
     return res.status(200).json({comments})
+})
+
+exports.get_post = asyncHandler (async (req,res,next) => {
+    const post = await Post.findById(req.params.postId).populate("author","user_name").exec()
+    if(post == null) return res.status(500).json(utils.errorToJson("Cannot get post"))
+    return res.status(200).json({post})
 })

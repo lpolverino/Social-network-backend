@@ -3,6 +3,9 @@ const router = express.Router();
 const authentication = require("../authenticate")
 const postControler = require("../controlers/postControler")
 
+router.get("/:postId", authentication.parseToken, authentication.verifyToken, 
+    postControler.get_post
+)
 
 router.post("/:userId", authentication.parseToken, authentication.verifyToken, authentication.isTokenForRouteUser,
     postControler.add_post
