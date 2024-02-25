@@ -53,7 +53,7 @@ router.post('/singup',
     const user = await User.findOne({user_name:req.body.username}).select("user_name").exec()
 
     if(user !== null){
-      return res.status(400).send({errors: utils.errorToJson("username already taken")})      
+      return res.status(400).json( utils.errorToJson("username already taken"))      
     }
     const imageUrl = utils.getGravatarHash(req.body.email)
 
@@ -71,7 +71,7 @@ router.post('/singup',
         })
       })
       .catch( e =>{
-        return res.status(500).json({errors: utils.errorToJson("cannot save user")})
+        return res.status(500).json( utils.errorToJson("cannot save user"))
       })
     const savedUser = await newUser.save()
     const token = jwt.sign({user:newUser}, process.env.SECRET_P);
