@@ -52,6 +52,8 @@ exports.add_post = [
             return res.status(400).json({errors:utils.parseErrorsToJson( errors.array())});
         }
 
+        console.log(req.body);
+
         const user = await User.findById(req.params.userId).select("user_name").exec()
         if(user === null){
             return res.status(403).json(utils.errorToJson("author is not register"))
@@ -60,6 +62,7 @@ exports.add_post = [
         const newPost = new Post({
             author:user._id,
             content:req.body.content,
+            image: req.body.image.myFile ?? "",
             likes:{
                 total:0,
                 likes:[]

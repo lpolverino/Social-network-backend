@@ -11,8 +11,8 @@ const PostSchema = new Schema({
         total: {type:Number, default:0},
         likes:[{type: Schema.Types.ObjectId, ref: "User", required:true}]
     }},
-    comments:[{type: Schema.Types.ObjectId, ref:"Comment", required:true}]
-
+    comments:[{type: Schema.Types.ObjectId, ref:"Comment", required:true}],
+    image: {type:String, default:""}
 })
 
 module.exports = mongoose.model("Post", PostSchema)

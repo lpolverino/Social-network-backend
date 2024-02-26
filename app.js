@@ -8,8 +8,9 @@ const jwt = require("jsonwebtoken")
 const passport = require("passport")
 const strategy = require("passport-local").Strategy
 const authenticate = require("./authenticate")
-
 const session = require("express-session");
+const bodyParser = require("body-parser")
+
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -50,13 +51,14 @@ passport.deserializeUser(function(user, done) {
 
 app.use(cors())
 app.use(logger('dev'));
-app.use(express.json());
+app.use(express.json({limit:"50mb"}));
 app.use(session({ secret: process.env.SECRET_P, resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
