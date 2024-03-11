@@ -149,6 +149,48 @@ exports.index_posts = asyncHandler ( async (req,res,next) => {
     return res.status(200).json({posts})
 })
 
+exports.edit_profile = [
+    body("about")
+    .trim()
+    .isLength({max:500})
+    .withMessage("About section to large"),
+    asyncHandler(async (req,res,next) => {
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){
+            return res.status(400).json({ errors: utils.parseErrorsToJson(result.array()) });
+        }
+
+        const user = await User.findById(req.params.userId).exec()
+
+        if(user === null){
+            return res.status(404).json({error: utils.errorToJson("user not found")})
+        }
+         const userWithNewValues = {
+            _id:user._id,
+            user_name:user.user_name,
+            password:user.password,
+            email:user.email,
+            about:req.body.about === '' ? user.about: req.body.about,
+            image:req.body.image === '' ? user.image: req.body.image,
+            birth_date:user.birt_date,
+            sing_date:user.sing_date,
+            followers: user.followers,
+            following:user.following,
+            github_id:user.github_id,
+            github_image: user.github_image,
+            notifications:user.notifications
+        }
+
+        console.log(req.body);
+        const updatedUser = await User.findByIdAndUpdate(req.params.userId, userWithNewValues, {}).exec()
+
+        if(updatedUser) return res.status(200).json({msg:'User updated correctly'});
+        
+        return res.status(500).json({error: utils.errorToJson('User was not updateded')});
+
+    })
+]
+
 exports.get_user_posts = asyncHandler( async (req,res,next) => {
 
 })

@@ -11,6 +11,9 @@ router.post("/:userId/follow", authentication.parseToken, authentication.verifyT
  userControler.add_following
 );
 
+router.put("/:userId/profile", authentication.parseToken, authentication.verifyToken, authentication.isTokenForRouteUser,
+  userControler.edit_profile)
+
 router.put("/:userId/notifications", authentication.parseToken, authentication.verifyToken, authentication.isTokenForRouteUser,
 userControler.read_notifications);
 
